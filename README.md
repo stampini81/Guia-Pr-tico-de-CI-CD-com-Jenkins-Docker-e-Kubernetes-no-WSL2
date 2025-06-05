@@ -105,9 +105,10 @@ nano ~/.bashrc
 ```
 Adicione as seguintes linhas no final do arquivo (substitua o caminho):
 
-```Bash
+
 
 # Configuração JAVA_HOME
+```Bash
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64" # Substitua pelo seu caminho real
 export PATH=$JAVA_HOME/bin:$PATH
 ```
