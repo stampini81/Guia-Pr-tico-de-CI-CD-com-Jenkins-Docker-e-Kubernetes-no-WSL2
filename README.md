@@ -25,7 +25,7 @@ Este repositório contém um exemplo prático de como configurar um pipeline de 
     * [Testando a Automação](#testando-a-automação)
     * [Verificando a Aplicação no Kubernetes](#verificando-a-aplicação-no-kubernetes)
 
----
+
 
 ## 1. Visão Geral
 
@@ -59,6 +59,7 @@ wsl --install                 # Para nova instalação
 wsl --update                  # Para atualizar
 wsl --set-default-version 2   # Definir WSL 2 como padrão
 wsl --install -d Ubuntu       # Instalar Ubuntu (se não tiver)
+````
 Docker Desktop
 O Docker Desktop é fundamental para fornecer o ambiente Docker e o cluster Kubernetes local.
 
@@ -81,136 +82,162 @@ Clique em Apply & Restart. Isso pode levar alguns minutos para baixar e configur
 Java (JDK 17)
 Para instalar o Java JDK 17, execute os seguintes comandos no seu terminal WSL:
 
-Bash
+```Bash
 
 sudo apt update
 sudo apt install openjdk-17-jdk -y
+```
 Configurar JAVA_HOME (Recomendado):
 Descubra o caminho de instalação do JDK:
 
-Bash
+
+```Bash
 
 sudo update-alternatives --config java
+```
 Anote o caminho (ex: /usr/lib/jvm/java-17-openjdk-amd64).
 
 Edite o arquivo ~/.bashrc:
 
-Bash
+```Bash
 
 nano ~/.bashrc
+```
 Adicione as seguintes linhas no final do arquivo (substitua o caminho):
 
-Bash
+```Bash
 
 # Configuração JAVA_HOME
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64" # Substitua pelo seu caminho real
 export PATH=$JAVA_HOME/bin:$PATH
+```
 Salve e feche. Recarregue o .bashrc:
 
-Bash
+
+```Bash
 
 source ~/.bashrc
+```
 Verifique:
 
-Bash
+```Bash
 
 echo $JAVA_HOME
 java -version
+```
 Jenkins
+
 Para instalar o Jenkins, siga os passos abaixo no seu terminal WSL:
 
+
 Adicione a chave do Jenkins ao seu sistema:
-Bash
+```Bash
 
 sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
   [https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key](https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key)
+```
 Adicione o repositório do Jenkins à lista de fontes do apt:
-Bash
+```Bash
 
 echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] [https://pkg.jenkins.io/debian-stable](https://pkg.jenkins.io/debian-stable) binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+```
 Atualize a lista de pacotes e instale o Jenkins:
-Bash
+```Bash
 
 sudo apt-get update
 sudo apt-get install -y jenkins
+```
 Iniciar e Acessar Jenkins:
 
 Inicie o serviço Jenkins:
-Bash
+```Bash
 
 sudo systemctl start jenkins
+```
 Verifique o status:
-Bash
+
+```Bash
 
 sudo systemctl status jenkins
+```
 Acesse o Jenkins no seu navegador: http://localhost:8080
 Chave de Segurança Inicial:
 Para obter a senha inicial de administrador do Jenkins:
 
-Bash
+```Bash
 
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword]
+```
 Siga as instruções na interface web para concluir a instalação (instale os plugins sugeridos).
 
 Configurar Permissões Docker para Jenkins:
 Adicione o usuário jenkins ao grupo docker para que ele possa interagir com o daemon Docker sem sudo:
 
-Bash
+```Bash
 
 sudo usermod -aG docker jenkins
+```
 Reinicie os serviços para aplicar as permissões:
 
-Bash
+```Bash
 
 sudo systemctl restart docker
 sudo systemctl restart jenkins
+```
 Você também pode precisar reiniciar o Docker Desktop no Windows para garantir que o socket seja resetado.
 
 Kubectl
 Para instalar o kubectl (ferramenta de linha de comando do Kubernetes), siga os passos abaixo no seu terminal WSL:
 
 Atualize a lista de pacotes e instale os pré-requisitos:
-Bash
+```Bash
 
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+```
 Adicione a chave GPG do Kubernetes:
-Bash
+```Bash
 
 curl -fsSL [https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key](https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key) | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+```
 Adicione o repositório do Kubernetes:
-Bash
+```Bash
 
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] [https://pkgs.k8s.io/core:/stable:/v1.30/deb/](https://pkgs.k8s.io/core:/stable:/v1.30/deb/) /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list
+```
 Atualize a lista de pacotes e instale o kubectl:
-Bash
+```Bash
 
 sudo apt-get update
 sudo apt-get install -y kubectl
+```
 Verifique a instalação:
 
-Bash
+```Bash
 
 kubectl version --client
+```
 Observação: O Kubernetes do Docker Desktop já configura o kubectl para usar seu cluster automaticamente.
 
 ngrok
 O ngrok cria um túnel seguro do seu localhost para a internet, permitindo que serviços externos (como o GitHub Webhook) acessem seu Jenkins local.
 
 Instalar ngrok:
-Bash
+```Bash
 
 sudo snap install ngrok
+```
 Conectar ngrok à sua conta:
 Crie uma conta gratuita no ngrok.com.
 Faça login e vá para https://dashboard.ngrok.com/get-started/your-authtoken.
 Copie o comando ngrok config add-authtoken <SEU_AUTHTOKEN_AQUI>.
 Cole e execute este comando no seu terminal WSL. <!-- end list -->
-Bash
+```Bash
 
 ngrok config add-authtoken <SEU_AUTHTOKEN_AQUI>
+```
 4. Configuração do Jenkins Pipeline
 Após instalar todos os componentes, configure o job de pipeline no Jenkins.
 
@@ -270,7 +297,7 @@ Conteúdo do Jenkinsfile
 Este é o Jenkinsfile que deve estar na raiz do seu repositório Git, com a lógica de build, push e deploy.
 
 Groovy
-
+```Bash
 // Jenkinsfile
 pipeline {
     agent any
@@ -321,6 +348,7 @@ sh "sed \-i 's\|\{\{tag\}\}\|</span>{tag_version}|g' ./k8s/deployment.yaml"
         }
     }
 }
+```
 Configuração do Gatilho de Automação (Webhook com ngrok)
 Para que o Jenkins dispare o pipeline automaticamente a cada git push:
 
@@ -347,7 +375,7 @@ Na seção "Gatilhos de Compilação (Build Triggers)", marque a opção:
 "Salvar".
 5. Estrutura do Projeto
 A estrutura do seu repositório deve ser a seguinte:
-
+```bash
 guia-pratico-jenkins/
 ├── Jenkinsfile
 ├── Dockerfile
@@ -362,6 +390,7 @@ guia-pratico-jenkins/
 │       └── system-life.js
 ├── README.md
 └── .gitignore
+```
 6. Execução e Verificação
 Testando a Automação
 Certifique-se de que o ngrok está rodando e o webhook no GitHub está configurado com a URL correta do ngrok (verifique as "Recent Deliveries" no GitHub Webhooks para 200 OK).
@@ -373,11 +402,12 @@ Após o pipeline do Jenkins ser concluído com SUCESSO, verifique a implantaçã
 
 Verificar recursos do Kubernetes:
 
-Bash
+```Bash
 
 kubectl get deployments conversao-temperatura
 kubectl get pods -l app=conversao-temperatura
 kubectl get services conversao-temperatura
+```
 Confirme que o Deployment está READY, os Pods estão Running e o Service é NodePort com a porta 30000.
 
 Acessar a aplicação:
