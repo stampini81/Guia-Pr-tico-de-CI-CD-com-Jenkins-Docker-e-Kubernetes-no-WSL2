@@ -66,20 +66,30 @@ O Docker Desktop é fundamental para fornecer o ambiente Docker e o cluster Kube
 Baixar e Instalar o Docker Desktop:
 
 Acesse https://www.docker.com/products/docker-desktop/ e baixe o instalador para Windows.
+
 Execute o instalador, certificando-se de que a opção "Enable WSL 2 Windows Subsystem for Linux features" esteja marcada.
+
 Conclua a instalação e reinicie o computador.
+
 Configurar Docker Desktop para Usar WSL 2:
 
 Abra o Docker Desktop.
 Vá para Settings (Configurações) (ícone de engrenagem).
+
 Em WSL Integration, certifique-se de que a integração com sua distro WSL (ex: Ubuntu) está habilitada.
+
 Em Resources > WSL Integration, ative o Docker Engine e Kubernetes para sua distro.
+
 Habilitar Kubernetes no Docker Desktop:
 
 Nas Settings (Configurações) do Docker Desktop, vá para Kubernetes.
+
 Marque "Enable Kubernetes".
+
 Clique em Apply & Restart. Isso pode levar alguns minutos para baixar e configurar o cluster Kubernetes.
+
 Java (JDK 17)
+
 Para instalar o Java JDK 17, execute os seguintes comandos no seu terminal WSL:
 
 ```Bash
@@ -231,10 +241,15 @@ Instalar ngrok:
 sudo snap install ngrok
 ```
 Conectar ngrok à sua conta:
+
 Crie uma conta gratuita no ngrok.com.
+
 Faça login e vá para https://dashboard.ngrok.com/get-started/your-authtoken.
+
 Copie o comando ngrok config add-authtoken <SEU_AUTHTOKEN_AQUI>.
+
 Cole e execute este comando no seu terminal WSL. <!-- end list -->
+
 ```Bash
 
 ngrok config add-authtoken <SEU_AUTHTOKEN_AQUI>
@@ -243,43 +258,75 @@ ngrok config add-authtoken <SEU_AUTHTOKEN_AQUI>
 Após instalar todos os componentes, configure o job de pipeline no Jenkins.
 
 Criação do Job
+
 Acesse seu Jenkins (http://localhost:8080).
+
 Clique em "Novo Item" (New Item) no menu lateral.
+
 Dê um nome ao seu job (ex: guia-jenkins1).
+
 Selecione "Pipeline" e clique em "OK".
+
 Configuração do SCM
+
 Na tela de configuração do job, role até a seção "Pipeline".
+
 Definição (Definition): Selecione "Pipeline script from SCM".
+
 Na seção "SCM":
+
 SCM: Selecione "Git".
+
 URL do Repositório (Repository URL): https://github.com/stampini81/guia-pratico-jenkins
+
 Credenciais (Credentials): Deixe como - none - (para repositórios públicos).
+
 Ramos para Construir (Branches to build) > Especificador de Ramificação: */main (ou o nome do seu branch principal, se diferente).
+
 Comportamentos Adicionais (Additional Behaviours): Clique em "Adicionar" e selecione "Limpar antes do checkout (Clean before checkout)".
+
 Caminho do Script (Script Path): Deixe vazio.
+
 Configuração de Credenciais Docker Hub
+
 Para o Jenkins poder enviar imagens para o Docker Hub, você precisa configurar um Personal Access Token (PAT).
 
 Crie um PAT no Docker Hub:
 
 Vá para https://hub.docker.com/settings/security.
+
 Faça login, se necessário.
+
 Clique em "New Access Token".
+
 Dê um nome ao token (ex: jenkins-ci-token).
+
 Permissões: Marque "Read & Write" (Leitura e Escrita) para repositórios.
+
 Clique em "Generate" e COPIE o token gerado IMEDIATAMENTE.
+
 Configure a credencial no Jenkins:
 
 Vá para "Gerenciar Jenkins" > "Gerenciar Credenciais".
+
 Clique em "Jenkins" (no store global).
+
 Clique em "+ Adicionar Credenciais".
+
 Tipo: "Nome de usuário com senha".
+
 Escopo: "Global".
+
 Nome de usuário: Seu nome de usuário do Docker Hub (ex: leandro282).
+
 Senha: Cole o PAT (Personal Access Token) gerado no Docker Hub.
+
 ID: Digite dockerhub (esta ID será usada no Jenkinsfile).
+
 Clique em "Criar".
+
 Configuração de Credenciais Kubernetes (Kubeconfig)
+
 Para o Jenkins interagir com seu cluster Kubernetes (o do Docker Desktop), ele precisa das credenciais do kubeconfig.
 
 Obtenha seu arquivo kubeconfig (geralmente em ~/.kube/config no seu ambiente WSL onde o kubectl está configurado para o Docker Desktop).
@@ -287,15 +334,25 @@ Obtenha seu arquivo kubeconfig (geralmente em ~/.kube/config no seu ambiente WSL
 Configure a credencial no Jenkins:
 
 Vá para "Gerenciar Jenkins" > "Gerenciar Credenciais".
+
 Clique em "Jenkins" (no store global).
+
 Clique em "+ Adicionar Credenciais".
+
 Tipo: "Arquivo Secreto" (Secret file).
+
 Escopo: "Global".
+
 ID: Digite kubeconfig (esta ID será usada no Jenkinsfile).
+
 Arquivo: Clique em "Escolher arquivo" e faça upload do seu arquivo ~/.kube/config (você pode copiá-lo do seu WSL para o Windows se for mais fácil para fazer o upload, ou usar um comando como cat ~/.kube/config > /mnt/c/temp/kubeconfig.txt no WSL e depois upload C:\temp\kubeconfig.txt no Jenkins).
+
 Clique em "Criar".
+
 Conteúdo do Jenkinsfile
+
 Este é o Jenkinsfile que deve estar na raiz do seu repositório Git, com a lógica de build, push e deploy.
+
 
 Groovy
 ```Bash
@@ -356,25 +413,41 @@ Para que o Jenkins dispare o pipeline automaticamente a cada git push:
 Inicie o túnel ngrok:
 
 Abra um novo terminal no seu WSL.
+
 Execute: ngrok http 8080
+
 Copie a URL HTTPS pública que o ngrok exibir (ex: https://algum-subdominio-aleatorio.ngrok-free.app). Esta URL muda a cada nova sessão do ngrok. Mantenha este terminal aberto.
+
 Configure o Webhook no GitHub:
 
 Vá para seu repositório no GitHub (https://github.com/stampini81/guia-pratico-jenkins).
+
 Clique em "Settings" > "Webhooks".
+
 Adicione (ou edite) um novo webhook.
+
 Payload URL: Cole a URL do ngrok que você copiou, ADICIONANDO /github-webhook/ no final.
+
 Exemplo: https://92e8-170-81-189-240.ngrok-free.app/github-webhook/
+
 Content type: application/json.
+
 Which events...: "Just the push event." (ou "Apenas o evento push.").
+
 Clique em "Add webhook" (ou "Update webhook").
+
 Habilite o Gatilho no Jenkins Job:
 
 Vá para a Configuração do seu job no Jenkins.
+
 Na seção "Gatilhos de Compilação (Build Triggers)", marque a opção:
+
 "GitHub hook trigger for GITScm polling".
+
 "Salvar".
+
 5. Estrutura do Projeto
+   
 A estrutura do seu repositório deve ser a seguinte:
 ```bash
 guia-pratico-jenkins/
@@ -393,12 +466,19 @@ guia-pratico-jenkins/
 └── .gitignore
 ```
 6. Execução e Verificação
+7. 
 Testando a Automação
+
 Certifique-se de que o ngrok está rodando e o webhook no GitHub está configurado com a URL correta do ngrok (verifique as "Recent Deliveries" no GitHub Webhooks para 200 OK).
+
 Faça uma pequena alteração em qualquer arquivo no seu projeto (ex: server.js).
+
 Faça um git commit e git push para o seu repositório GitHub.
+
 Vá para a página do seu job no Jenkins. Você deverá ver um novo build sendo disparado automaticamente em poucos segundos.
+
 Verificando a Aplicação no Kubernetes
+
 Após o pipeline do Jenkins ser concluído com SUCESSO, verifique a implantação:
 
 Verificar recursos do Kubernetes:
@@ -412,11 +492,16 @@ kubectl get services conversao-temperatura
 Confirme que o Deployment está READY, os Pods estão Running e o Service é NodePort com a porta 30000.
 
 Acessar a aplicação:
+
 Abra seu navegador web e acesse:
 http://localhost:30000
 
 Você também pode acessar os endpoints da API:
+
 http://localhost:30000/health
+
 http://localhost:30000/ready
+
 http://localhost:30000/celsius/25/fahrenheit
+
 <!-- end list -->
